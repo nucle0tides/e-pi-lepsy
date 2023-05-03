@@ -1,0 +1,351 @@
+openapi: 3.0.3
+info:
+  title: "e-pi-lepsy Flask API"
+  description: "prototpye API for e-pi-lepsy written with Python and using Flask"
+  version: "0.1.0"
+
+servers:
+  - url: "/api"
+
+components:
+  schemas:
+    Date:
+      type: string
+      format: date
+    DateTimeTz:
+      type: string
+      format: date-time
+    Duration:
+      type: array
+      items:
+        type: string
+        format: date-time
+      minItems: 2
+      maxItems: 2
+    # TODO: mark properties like id as `readOnly` instead of manually annotating `required` at endpoints like `POST /pet` below
+    # TODO: this includes createdAt, updatedAt, publicId
+    Pet:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        publicId:
+          type: string
+        createdAt:
+          $ref: "#/components/schemas/DateTimeTz"
+        updatedAt:
+          $ref: "#/components/schemas/DateTimeTz"
+        householdId:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          $ref: "#/components/schemas/Date"
+        avatar:
+          type: string
+    Household:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        publicId:
+          type: string
+        createdAt:
+          $ref: "#/components/schemas/DateTimeTz"
+        updatedAt:
+          $ref: "#/components/schemas/DateTimeTz"
+        primaryOwnerName:
+          type: string
+        primaryOwnerEmail:
+          type: string
+        secondaryOwnerName:
+          type: string
+        secondaryOwnerEmail:
+          type: string
+    SeizureType:
+      type: string
+      enum:
+        - TonicClonic
+        - Focal
+        - Unspecified
+    SeizureActivity:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        publicId:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        petId:
+          type: integer
+        date:
+          type: string
+        seizureDuration:
+          $ref: "#/components/schemas/Duration"
+        seizureType:
+          $ref: "#/components/schemas/SeizureType"
+        episodeDuration:
+          $ref: "#/components/schemas/Duration"
+        isClusterEvent:
+          type: boolean
+        location:
+          type: string
+        notes:
+          type: string
+        medicationAdministered:
+          type: object
+          additionalProperties: false
+          properties:
+            name:
+              type: string
+            dosage:
+              type: string
+      required:
+        - petId
+        - date
+        - seizureType
+        - episodeDuration
+    DosageUnit:
+      type: string
+      enum:
+        - mg
+        - g
+        - ml
+        - mg/ml
+    MedicationType:
+      type: string
+      enum:
+        - Pharmaceutical
+        - Supplement
+    Medication:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        publicId:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        petId:
+          type: integer
+        name:
+          type: string
+        alsoKnownAs:
+          type: array
+          items:
+            type: string
+        dosing:
+          type: string
+        dosage:
+          type: integer
+        dosageUnit:
+          $ref: "#/components/schemas/DosageUnit"
+        startDate:
+          $ref: "#/components/schemas/DateTimeTz"
+        endDate:
+          $ref: "#/components/schemas/DateTimeTz"
+        medicationType:
+          $ref: "#/components/schemas/MedicationType"
+        notes:
+          type: string
+    VeterinarianType:
+      type: string
+      enum:
+        - Primary
+        - Emergency
+        - Specialty
+    Veterinarian:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+         type: integer
+        publicId:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        petId:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        phone:
+          type: string
+        vetType:
+          $ref: "#/components/schemas/VeterinarianType"
+        primaryVetName:
+          type: string
+
+paths:
+  /household:
+    post:
+      operationId: "api.household.create"
+      tags:
+        - Household
+      summary: "Create a household."
+      requestBody:
+        description: "Household to create"
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Household"
+              required: ["primaryOwnerName", "primaryOwnerEmail"]
+      responses:
+        "201":
+          description: "Successfully created a Household."
+  /household/{id}:
+    get:
+      operationId: "api.household.get"
+      tags:
+        - Household
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: "Successfully queried household by ID."
+    delete:
+      operationId: "api.household.delete"
+      tags:
+        - Household
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        "204":
+          description: "Successfully deleted household with ID."
+    put:
+      operationId: "api.household.update"
+      tags:
+        - Household
+      summary: "Update a household by ID."
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        description: "Household properties being updated."
+        required: True
+        content:
+          application/json:
+            schema:
+              x-body-name: "household"
+              $ref: "#/components/schemas/Household"
+      responses:
+        "200":
+          description: "Successfully deleted pet with ID."
+  /household/list:
+    get:
+      operationId: "api.household.read_all"
+      tags:
+        - Household
+      summary: "List all households."
+      responses:
+        "200":
+          description: "Successfully retrieve household list."
+  /pet:
+    post:
+      operationId: "api.pet.create"
+      tags:
+        - Pet
+      summary: "Create a Pet."
+      requestBody:
+        description: "Pet to create"
+        required: True
+        content:
+          application/json:
+            schema:
+              x-body-name: "pet"
+              $ref: "#/components/schemas/Pet"
+              required: ["firstName", "lastName", "dateOfBirth", "householdId"]
+      responses:
+        "201":
+          description: "Successfully created a Pet."
+  /pet/list:
+    get:
+      operationId: "api.pet.read_all"
+      tags:
+        - Pet
+      summary: "Read the list of pets"
+      responses:
+        "200":
+          description: "Successfully retrieve pet list"
+  /pet/{id}:
+    get:
+      operationId: "api.pet.get"
+      tags:
+        - Pet
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: "Successfully queried pet by ID."
+    delete:
+      operationId: "api.pet.delete"
+      tags:
+        - Pet
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: "Successfully deleted pet with ID."
+    put:
+      operationId: "api.pet.update"
+      tags:
+        - Pet
+      summary: "Update a pet by ID."
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        description: "Pet properties being updated."
+        required: True
+        content:
+          application/json:
+            schema:
+              x-body-name: "pet"
+              $ref: "#/components/schemas/Pet"
+      responses:
+        "200":
+          description: "Successfully deleted pet with ID."
