@@ -1,5 +1,5 @@
 import enum
-from app import db
+from app import db, ma
 from datetime import datetime, date
 from sqlalchemy import ForeignKey, func, text, Date
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
@@ -43,8 +43,25 @@ class Household(db.Model):
 
     pets: Mapped[List["Pet"]] = relationship(back_populates="household")
 
+class HouseholdSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Household
+        load_instance = True
+        sqla_session = db.session
 
 
+household_schema = HouseholdSchema()
+households_schema = HouseholdSchema(many=True)
+
+class PetSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Pet
+        load_instance = True
+        sqla_session = db.session
+        include_fk = True
+
+pet_schema = PetSchema()
+pets_schema = PetSchema(many=True)
 
 
 class SeizureActivity(db.Model):
@@ -73,3 +90,12 @@ class SeizureActivity(db.Model):
     medication_administered: Mapped[Optional[str]] = mapped_column()
     medication_dosage: Mapped[Optional[str]] = mapped_column()
 
+class SeizureActivitySchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = SeizureActivity
+        load_instance = True
+        sqla_session = db.session
+        include_fk = True
+
+seizure_activity_schema = SeizureActivitySchema()
+seizure_activities_schema = SeizureActivitySchema(many=True)

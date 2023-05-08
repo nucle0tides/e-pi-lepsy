@@ -2,6 +2,7 @@ import connexion
 import os
 from config import DevelopmentCfg
 from flask import jsonify, make_response
+from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
@@ -19,7 +20,9 @@ DB_PASSWORD = app.config.get('DB_PASSWORD')
 app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql+psycopg://dev:{DB_PASSWORD}@localhost:5433/epilepsy"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# NOTE: Always initialize sqlalchemy first and then marshmallow
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 migrate = Migrate(app, db)
 
 # Have to import my models here for autogeneration in migrations

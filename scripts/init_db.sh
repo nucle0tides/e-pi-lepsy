@@ -11,7 +11,7 @@ fi
 #check for python version? sqlalchemy? alembic?
 if ! [ -x "$(command -v flask)" ]; then
     echo >&2 "Error: flask is not installed"
-    echo >&2 "Install with poetry and within the correct venv environment."
+    echo >&2 "With a properly configured dev venv environment, use poetry as follows:"
     echo >&2 "    poetry add flask Flask-Migrate && poetry shell"
     exit 1
 fi
@@ -47,8 +47,20 @@ until psql -h "localhost" -U "${DB_USER}" -p "${DB_PORT}" -d "${DB_NAME}" -c '\q
     sleep 1 
 done
 
-# TODO? migrations etc
+
 >&2 echo "Postgres is up and running on port ${DB_PORT}"
+
+# TODO: automatically configure to use desired extensions, ie uuid-osp for uuid_generate_v4(), would be very nice.
+#       This is a rough outline of what that might look like but I need to test it and then re-write the Flask-Sqlalchemy models to use via server_default=text("uuid_generate_v4()")
+# >&2 echo "Setting up PostgreSQL extensions required by application..."
+
+# if ! [[ $(psql -h "localhost" -U "${DB_USER}" -p "${DB_PORT}" -d "${DB_NAME}" -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')]];
+# then
+#     echo >&2 "extensions failed to install. manual intervention required!"
+#     exit 1;
+# fi
+
+# TODO: Automatically load and run migrations via Flask-Migration commands
 >&2 echo "WARN: Migrations currently not automated."
 
 # DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT}/${DB_NAME}
