@@ -2,7 +2,7 @@ import enum
 from app import db, ma
 from datetime import datetime, date
 from sqlalchemy import ForeignKey, func, text, Date
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 
@@ -41,9 +41,18 @@ class Household(db.Model):
     secondary_owner_name: Mapped[Optional[str]] = mapped_column()
     secondary_owner_email: Mapped[Optional[str]] = mapped_column()
 
+    # NOTE: should probably update relation to define DELETE ON CASCADE behavior
     pets: Mapped[List["Pet"]] = relationship(back_populates="household")
 
-class HouseholdSchema(ma.SQLAlchemyAutoSchema):
+def camelcase(s):
+    parts = iter(s.split("_"))
+    return next(parts) + "".join(i.title() for i in parts)
+
+class CamelCaseSchema(ma.Schema):
+    def on_bind_field(self, field_name, field_obj):
+        field_obj.data_key = camelcase(field_obj.data_key or field_name)
+
+class HouseholdSchema(ma.SQLAlchemyAutoSchema, CamelCaseSchema):
     class Meta:
         model = Household
         load_instance = True
@@ -53,7 +62,7 @@ class HouseholdSchema(ma.SQLAlchemyAutoSchema):
 household_schema = HouseholdSchema()
 households_schema = HouseholdSchema(many=True)
 
-class PetSchema(ma.SQLAlchemyAutoSchema):
+class PetSchema(ma.SQLAlchemyAutoSchema, CamelCaseSchema):
     class Meta:
         model = Pet
         load_instance = True
@@ -90,7 +99,7 @@ class SeizureActivity(db.Model):
     medication_administered: Mapped[Optional[str]] = mapped_column()
     medication_dosage: Mapped[Optional[str]] = mapped_column()
 
-class SeizureActivitySchema(ma.SQLAlchemyAutoSchema):
+class SeizureActivitySchema(ma.SQLAlchemyAutoSchema, CamelCaseSchema):
     class Meta:
         model = SeizureActivity
         load_instance = True

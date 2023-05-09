@@ -1,73 +1,55 @@
+from app import db
 from flask import abort, jsonify, make_response
-from . import get_timestamp
+from models import Household, household_schema, households_schema
+# from . import get_timestamp
 import uuid
 
-HOUSEHOLDS = {
-    1: {
-        "id": 1,
-        "publicID": "9BE77267-5EC2-4B07-9605-1EF50B64DF5E",
-        "createdAt": "2018-07-15T12:00:00.000Z",
-        "updatedAt": "2023-04-23T22:47:50.823Z",
-        "primaryOwnerName": "Gabby Ortman",
-        "primaryOwnerEmail": "ortmangl@gmail.com",
-        "secondaryOwnerName": "Elias Garcia",
-        "secondaryOwnerEmail": "elias.jm.garcia@gmail.com"
-    }
-}
-
-ID_ = 1
-
 def read_all():
-    return make_response(jsonify(data=list(HOUSEHOLDS.values())), 200)
+    households = Household.query.all()
+    return households_schema.dump(households)
 
 def create(body):
-    global HOUSEHOLDS
-    global ID_
-    ID_ += 1
-    id_ = ID_
-
-    primary_owner_name = body.get("primaryOwnerName")
-    primary_owner_email = body.get("primaryOwnerEmail")
-    updated_at = created_at = get_timestamp()
-
-    if primary_owner_email and primary_owner_name:
-        HOUSEHOLDS[id_] = {
-            "id": id_,
-            "publicID": uuid.uuid4(),
-            "createdAt": created_at,
-            "updatedAt": updated_at,
-            "primaryOwnerName": primary_owner_name,
-            "primaryOwnerEmail": primary_owner_email
-        }
-        return 201, { "data" : HOUSEHOLDS[id_] }
+    # NOTE: connexion provides me some guarantees via openAPI spec (request must have JSON body with primaryOwnerName, etc) but there are probably some other things i should check here before
+    #       committing to the database. that, or, i should add additional constraints on the db (uniqueness constraint on email? validator for email field? etc)
+    new_household = Household(primary_owner_name=body.get("primaryOwnerName"), primary_owner_email=body.get("primaryOwnerEmail"), secondary_owner_name=body.get("secondaryOwnerName"), secondary_owner_email=body.get("secondaryOwnerEmail"))
+    db.session.add(new_household)
+    db.session.commit()
+    return household_schema.dump(new_household)
     
 def update(id_, household):
-    if id_ in HOUSEHOLDS:
-        curr = HOUSEHOLDS[id_]
-        primary_owner_name = household.get("primaryOwnerName", curr.get("primaryOwnerName"))
-        primary_owner_email = household.get("primaryOwnerEmail", curr.get("primaryOwnerEmail"))
-        secondary_owner_name = household.get("secondaryOwnerName", curr.get("secondaryOwnerName"))
-        secondary_owner_email = household.get("secondaryOwnerEmail", curr.get("secondaryOwnerEmail"))
-        HOUSEHOLDS[id_].update({
-            "primaryOwnerName": primary_owner_name,
-            "primaryOwnerEmail": primary_owner_email,
-            "secondaryOwnerName": secondary_owner_name,
-            "secondaryOwnerEmail": secondary_owner_email,
-            "updatedAt": get_timestamp()
-        })
-        return make_response(jsonify(HOUSEHOLDS[id_]), 200)
+    print(f"REQUEST BODY: {household}")
+    curr_household = Household.query.filter(Household.public_id == id_).one_or_none()
+
+    if curr_household is not None:
+        updated_household = household_schema.load(household, partial=True, session=db.session)
+        if updated_household.primary_owner_name:
+            curr_household.primary_owner_name = updated_household.primary_owner_name
+        if updated_household.primary_owner_email:
+            curr_household.primary_owner_email = updated_household.primary_owner_email
+        if updated_household.secondary_owner_name:
+            curr_household.secondary_owner_name = updated_household.secondary_owner_name
+        if updated_household.secondary_owner_email:
+            curr_household.secondary_owner_email = updated_household.secondary_owner_email
+        db.session.merge(curr_household)
+        db.session.commit()
+        return household_schema.dump(curr_household)
     else:
         abort(404, f"Household with ID {id_} not found.")
 
 def get(id_):
-    if id_ in HOUSEHOLDS:
-        return 200, { "data" : HOUSEHOLDS[id_] }
+    household = Household.query.filter(Household.public_id == id_).one_or_none()
+
+    if household is not None:
+        return household_schema.dump(household)
     else:
         abort(404, f"Could not find household with ID: {id_}")
 
 def delete(id_):
-    if id_ in HOUSEHOLDS:
-        del HOUSEHOLDS[id_]
-        return make_response(f"Household with ID {id_} successfully deleted.")
+    household = Household.query.filter(Household.public_id == id_).one_or_none()
+
+    if household:
+        db.session.delete(household)
+        db.session.commit()
+        return make_response(jsonify({"detail": f"Household with ID {id_} successfully deleted", "status": 200}), 200)
     else:
         abort(404, f"Household with ID {id_} not found.")
