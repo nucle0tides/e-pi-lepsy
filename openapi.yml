@@ -33,10 +33,14 @@ components:
           readOnly: true
         publicId:
           type: string
+          format: uuid
+          readOnly: True
         createdAt:
           $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         householdId:
           type: integer
         firstName:
@@ -53,12 +57,17 @@ components:
       properties:
         id:
           type: integer
+          readOnly: true
         publicId:
           type: string
+          format: uuid
+          readOnly: True
         createdAt:
           $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         primaryOwnerName:
           type: string
         primaryOwnerEmail:
@@ -79,12 +88,16 @@ components:
       properties:
         id:
           type: integer
+          readOnly: True
         publicId:
           type: string
+          readOnly: True
         createdAt:
-          type: string
+          $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         updatedAt:
-          type: string
+          $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         petId:
           type: integer
         date:
@@ -132,12 +145,17 @@ components:
       properties:
         id:
           type: integer
+          readOnly: true
         publicId:
           type: string
+          format: uuid
+          readOnly: true
         createdAt:
-          type: string
+          $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         updatedAt:
-          type: string
+          $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         petId:
           type: integer
         name:
@@ -172,12 +190,17 @@ components:
       properties:
         id:
          type: integer
+         readOnly: true
         publicId:
           type: string
+          format: uuid
+          readOnly: True
         createdAt:
-          type: string
+          $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         updatedAt:
-          type: string
+          $ref: "#/components/schemas/DateTimeTz"
+          readOnly: True
         petId:
           type: integer
         name:
@@ -224,7 +247,8 @@ paths:
         - name: id
           in: path
           schema:
-            type: integer
+            type: string
+            format: uuid
           required: true
       responses:
         "200":
@@ -237,7 +261,8 @@ paths:
         - name: id
           in: path
           schema:
-            type: integer
+            type: string
+            format: uuid
           required: true
       responses:
         "204":
@@ -251,7 +276,8 @@ paths:
         - name: id
           in: path
           schema:
-            type: integer
+            type: string
+            format: uuid
           required: true
       requestBody:
         description: "Household properties being updated."
@@ -261,6 +287,7 @@ paths:
             schema:
               x-body-name: "household"
               $ref: "#/components/schemas/Household"
+
       responses:
         "200":
           description: "Successfully deleted pet with ID."
@@ -309,7 +336,8 @@ paths:
         - name: id
           in: path
           schema:
-            type: integer
+            type: string
+            format: uuid
           required: true
       responses:
         "200":
