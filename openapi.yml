@@ -41,6 +41,7 @@ components:
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
           readOnly: True
+        # TODO: just realized, do we want this to be the publicId or the actual Id
         householdId:
           type: integer
         firstName:
@@ -350,7 +351,8 @@ paths:
         - name: id
           in: path
           schema:
-            type: integer
+            type: string
+            format: uuid
           required: true
       responses:
         "200":
@@ -364,7 +366,8 @@ paths:
         - name: id
           in: path
           schema:
-            type: integer
+            type: string
+            format: uuid
           required: true
       requestBody:
         description: "Pet properties being updated."
@@ -376,4 +379,4 @@ paths:
               $ref: "#/components/schemas/Pet"
       responses:
         "200":
-          description: "Successfully deleted pet with ID."
+          description: "Successfully updated pet with ID."

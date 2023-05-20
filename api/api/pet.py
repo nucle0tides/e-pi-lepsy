@@ -1,90 +1,57 @@
-from . import get_timestamp
+from app import db
 from flask import abort, jsonify, make_response
-import uuid
-
-
-
-PETS = {
-    "smalls": {
-        "id": 1,
-        "publicID": "695F20B9-C89A-4F56-B1DD-F01CF6AC9279",
-        "createdAt": "2023-04-23T22:41:30.299Z",
-        "updatedAt": "2023-04-23T22:41:30.299Z",
-        "householdId": 1,
-        "firstName": "Biggie Smalls",
-        "lastName": "Ortman",
-        "dateOfBirth": "2010-08-13T12:00:00.000Z",
-        "avatar": "30298cb1ce4c9f140718a3930122faa6.jpg"
-    },
-    "pius": {
-        "id": 2,
-        "publicID": "47726D96-D9AE-43C1-A5ED-7835CC6AC558",
-        "createdAt": "2023-04-23T22:41:30.299Z",
-        "updatedAt": "2023-04-23T22:41:30.299Z",
-        "householdId": 1,
-        "firstName": "Antoninus Pius",
-        "lastName":  "Ortman",
-        "dateOfBirth": "2018-07-15T12:00:00.000Z",
-        "avatar": "1fc3912f639283b14bcd750d3d955605.jpg"
-    }
-}
-
-ID_ = 2
+from models import Pet, pet_schema, pets_schema
 
 def read_all():
-    return { "data": list(PETS.values()) }
+    pets = Pet.query.all()
+    return pets_schema.dump(pets)
 
 def create(pet):
     print(pet)
-    last_name = pet.get("lastName")
-    first_name = pet.get("firstName")
-    date_of_birth = pet.get("dateOfBirth")
-    household_id = pet.get("householdId")
-    createdAt = updatedAt = get_timestamp()
-    global ID_
-    ID_ += 1
-    id_ = ID_
-    global PETS
-    if first_name and first_name not in PETS:
-        PETS[first_name] = {
-            "id": id_,
-            "publicId": uuid.uuid4(),
-            "createdAt": createdAt,
-            "updatedAt": updatedAt,
-            "householdId": household_id,
-            "firstName": first_name,
-            "lastName": last_name,
-            "dateOfBirth": date_of_birth
-        }
-        return PETS[first_name], 201
+    # TODO: exists check, just like Household
+    # TODO: probably want client to be using public_id for households (just as with pets), so should actually look up household by public ID here and then use that
+    #       to get the private id for household_id unless we change over to using the public_id for all of it.
+    new_pet = Pet(first_name=pet.get("firstName"), last_name=pet.get("lastName"), date_of_birth=pet.get("dateOfBirth"), household_id=pet.get("householdId"))
+    db.session.add(new_pet)
+    db.session.commit()
+    return pet_schema.dump(new_pet)
 
 def update(id_, pet):
-    for pet_ in PETS:
-        if PETS[pet_]["id"] == id_: 
-            curr = PETS[pet_]
-            household_id = pet.get("householdId", curr.get("householdId"))
-            first_name = pet.get("firstName", curr.get("firstName"))
-            last_name = pet.get("lastName", curr.get("lastName"))
-            date_of_birth = pet.get("dateOfBirth", curr.get("dateOfBirth"))
-            PETS[pet_].update({
-                "householdId": household_id,
-                "firstName": first_name,
-                "lastName": last_name,
-                "dateOfBirth": date_of_birth,
-                "updatedAt": get_timestamp()
-            })
-            return make_response(jsonify(PETS[pet_]), 200)
-    abort(404, f"Pet with ID {id_} not found.")
+    print(f"REQUEST BODY: {pet}")
+    curr_pet = Pet.query.filter(Pet.public_id == id_).one_or_none()
+    # TODO: try iter with setattr instead of this mess
+    # TODO: with pets, should i want some combination of first_name, last_name, household_id, and/or date_of_birth to be a uniqueness constraint? composite key?
+    # TODO: Really is an edge case, but what about changing household id's? just disallow it?
+    if curr_pet is not None:
+        updated_pet = pet_schema.load(pet, partial=True, session=db.session)
+        if updated_pet.first_name:
+            curr_pet.first_name = updated_pet.first_name
+        if updated_pet.last_name:
+            curr_pet.last_name = updated_pet.last_name
+        if updated_pet.date_of_birth:
+            curr_pet.date_of_birth = updated_pet.date_of_birth
+        if updated_pet.avatar:
+            curr_pet.avatar = updated_pet.avatar
+        db.session.merge(curr_pet)
+        db.session.commit()
+        return pet_schema.dump(curr_pet)
+    else:
+        abort(404, f"Pet with ID {id_} not found.")
 
 def get(id_):
-    for pet in PETS:
-        if PETS[pet]["id"] == id_:
-            return 200, {"data": PETS[pet]}
-    abort(404, f"Could not find Pet with ID: {id_}")
+    pet = Pet.query.filter(Pet.public_id == id_).one_or_none()
+
+    if pet is not None:
+        return pet_schema.dump(pet)
+    else:
+        abort(404, f"Could not find Pet with ID: {id_}")
 
 def delete(id_):
-    for pet in PETS:
-        if PETS[pet]["id"] == id_:
-            del PETS[pet]
-            return make_response(f"Pet with ID {id_} successfully deleted.", 200)
-    abort(404, f"Pet with ID {id_} not found.")
+    pet = Pet.query.filter(Pet.public_id == id_).one_or_none()
+
+    if pet is not None:
+        db.session.delete(pet)
+        db.session.commit()
+        return make_response(jsonify({"detail": f"Pet with ID {id_} successfully deleted.", "status": 200}), 200)
+    else:
+        abort(404, f"Could not find Pet with ID: {id_}")
