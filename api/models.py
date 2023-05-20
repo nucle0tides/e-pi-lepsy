@@ -6,8 +6,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 
-# class DbMetaBase(DeclarativeBase):
-#     pass
+# NOTE: for any future entity with an updated_at column, need to modify the corresponding alembic migration to execute the trigger for each instance as done in migration:
+#       api/migrations/versions/c00f3ae959a6_fixed_updated_at_in_models.py
 
 class SeizureType(enum.Enum):
     TONICCLONIC = "tonic-clonic"
@@ -20,11 +20,12 @@ class Pet(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     public_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), server_default=text("gen_random_uuid()"))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), server_onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
     household_id: Mapped[int] = mapped_column(ForeignKey("household.id"))
     date_of_birth: Mapped[date] = mapped_column()
     first_name: Mapped[str] = mapped_column()
     last_name: Mapped[Optional[str]] = mapped_column()
+    avatar: Mapped[Optional[str]] = mapped_column()
 
     household: Mapped["Household"] = relationship(back_populates="pets")
 
@@ -35,7 +36,7 @@ class Household(db.Model):
     # NOTE: I would like to use uuid_generate_v4() instead but i'm tired of dealing with alembic and sqlalchemy lol
     public_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), server_default=text("gen_random_uuid()"))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), server_onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
     primary_owner_name: Mapped[str] = mapped_column()
     primary_owner_email: Mapped[str] = mapped_column()
     secondary_owner_name: Mapped[Optional[str]] = mapped_column()
@@ -77,7 +78,7 @@ class SeizureActivity(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     public_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), server_default=text("gen_random_uuid()"))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), server_onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
     pet_id: Mapped[int] = mapped_column(ForeignKey("pet.id"))
     date: Mapped[date] = mapped_column(Date)
     # NOTE: might be better to store seizure_start, seizure_end and then have a computed column
