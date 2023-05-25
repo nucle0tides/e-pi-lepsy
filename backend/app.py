@@ -20,13 +20,14 @@ def init_app():
     - https://hackersandslackers.com/flask-application-factory/
     - https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/
     """
+    # TODO: have actual config loading logic for env vars, etc
+    env_cfg = os.getenv("EPILYPSY_SETTINGS", DevelopmentCfg)
+
     cnx_app = connexion.FlaskApp(__name__, specification_dir="./", host="0.0.0.0", port=8080)
     cnx_app.add_api("openapi.yml", pythonic_params=True)
 
     app = cnx_app.app
 
-    # TODO: have actual config loading logic for env vars, etc
-    env_cfg = os.getenv("EPILYPSY_SETTINGS", DevelopmentCfg)
     app.config.from_object(env_cfg)
     DB_PASSWORD = app.config.get('DB_PASSWORD')
 

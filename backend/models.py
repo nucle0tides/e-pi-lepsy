@@ -1,13 +1,62 @@
+# NOTE: for any future entity with an updated_at column, need to modify the corresponding alembic migration to execute the trigger for each instance as done in migration:
+#       api/migrations/versions/c00f3ae959a6_fixed_updated_at_in_models.py
 import enum
 from app import db, ma
 from datetime import datetime, date
+import logging
 from sqlalchemy import ForeignKey, func, text, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
+from sqlalchemy.exc import NoResultFound
 
-# NOTE: for any future entity with an updated_at column, need to modify the corresponding alembic migration to execute the trigger for each instance as done in migration:
-#       api/migrations/versions/c00f3ae959a6_fixed_updated_at_in_models.py
+class CRUDMixin(object):
+    @classmethod
+    def create(cls, schema, session, data):
+        new_obj = schema.load(data, partial=True)
+        session.add(new_obj)
+        return new_obj
+
+    @classmethod
+    def read(cls, session, id_=None, public_id=None):
+        logging.info(f"{cls}.read(id: {id_}, public_id: {public_id})")
+        if id_ is None and public_id is None:
+            raise ValueError("Expected id_ or public_id to be provided as an argument")
+        elif id_:
+            logging.debug("looking for record by id...")
+            # NOTE: I've changed this query from one_or_none() to one() which immediately raises an exception because
+            #       my routes are currently structured to expect an exception. The exception is then propagated into an error response handler.
+            #       The other CRUD operations also expect this behavior, which allows the exception to be transparent (i.e. record not found as opposed a failed update operation).
+            #       I don't know if this is actually a good design.
+            return session.query(cls).filter(cls.id == id_).one()
+        else:
+            logging.debug("looking for record by public_id")
+            return session.query(cls).filter(cls.public_id == public_id).one()
+
+    @classmethod
+    def update(cls, schema, session, data, id_=None, public_id=None):
+        logging.info(f"{cls}.update(data: {data}, id_: {id_}, public_id: {public_id})")
+        if id_ is None and public_id is None:
+            raise ValueError("Expected id_ or public_id to be provided as an argument")
+        elif id_:
+            curr_obj = cls.read(session, id_)
+            return schema.load(data, partial=True, instance=curr_obj)
+        else:
+            curr_obj = cls.read(session, public_id=public_id)
+            return schema.load(data, partial=True, instance=curr_obj)
+
+    @classmethod
+    def delete(cls, session, id_=None, public_id=None):
+        logging.info(f"{cls}.delete(id_: {id_}, public_id: {public_id})")
+        if id_ is None and public_id is None:
+            raise ValueError("Expected id_ or public_id to be provided as an argument")
+        elif id_:
+            curr_obj = cls.read(session, id_)
+            db.session.delete(curr_obj)
+        else:
+            curr_obj = cls.read(session, public_id=public_id)
+            db.session.delete(curr_obj)
+
 
 class SeizureType(enum.Enum):
     TONICCLONIC = "tonic-clonic"
@@ -29,7 +78,7 @@ class Pet(db.Model):
 
     household: Mapped["Household"] = relationship(back_populates="pets")
 
-class Household(db.Model):
+class Household(db.Model, CRUDMixin):
     __tablename__ = "household"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -58,6 +107,7 @@ class HouseholdSchema(ma.SQLAlchemyAutoSchema, CamelCaseSchema):
         model = Household
         load_instance = True
         sqla_session = db.session
+        exclude = ("id", "created_at", "updated_at")
 
 
 household_schema = HouseholdSchema()
@@ -69,6 +119,7 @@ class PetSchema(ma.SQLAlchemyAutoSchema, CamelCaseSchema):
         load_instance = True
         sqla_session = db.session
         include_fk = True
+        exclude = ("id", "created_at", "updated_at")
 
 pet_schema = PetSchema()
 pets_schema = PetSchema(many=True)
@@ -106,6 +157,7 @@ class SeizureActivitySchema(ma.SQLAlchemyAutoSchema, CamelCaseSchema):
         load_instance = True
         sqla_session = db.session
         include_fk = True
+        exclude = ("id", "created_at", "updated_at")
 
 seizure_activity_schema = SeizureActivitySchema()
 seizure_activities_schema = SeizureActivitySchema(many=True)
