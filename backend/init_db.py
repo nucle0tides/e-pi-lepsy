@@ -8,7 +8,7 @@ from run import app
 HOUSEHOLDS_WITH_PETS = [
     {
         "primary_owner_name": "Gabby Ortman",
-        "primary_owner_email": "ortmangl@gmail.com",
+        "primary_owner_email": "made-up-email-1@gmail.com",
         "secondary_owner_name": "Elias Garcia",
         "secondary_owner_email": "elias.jm.garcia@gmail.com",
         "pets": [
@@ -27,10 +27,10 @@ HOUSEHOLDS_WITH_PETS = [
         ]
     },
     {
-        "primary_owner_name": "Ana Bertha Garcia",
-        "primary_owner_email": "abgarcia79@gmail.com",
-        "secondary_owner_name": "AnaVictoria Garcia Medina",
-        "secondary_owner_email": "avgmanimals@gmail.com",
+        "primary_owner_name": "AG",
+        "primary_owner_email": "made-up-email-2@gmail.com",
+        "secondary_owner_name": "AVGM",
+        "secondary_owner_email": "made-up-email-3@gmail.com",
         "pets": [
             {
                 "first_name": "Zinc",

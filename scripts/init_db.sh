@@ -60,15 +60,16 @@ done
 #     exit 1;
 # fi
 
-# TODO: Automatically load and run migrations via Flask-Migration commands
->&2 echo "WARN: Migrations currently not automated."
+>&2 echo "Running DB migrations..."
 
-# DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT}/${DB_NAME}
-# export DATABASE_URL
+DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT}/${DB_NAME}
+export DATABASE_URL
 
-# FLASK_APP="${FLASK_APP:=app.py}"
-# export FLASK_APP
+FLASK_APP="${FLASK_APP:=run.py}"
+export FLASK_APP
 
-# poetry run flask db init
+cd backend/
 
-# >&2 echo "Postgres has been migrated, ready to go!"
+poetry run flask db upgrade
+
+>&2 echo "Postgres has been migrated, ready to go!"
