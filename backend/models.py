@@ -63,7 +63,7 @@ class SeizureType(enum.Enum):
     FOCAL = "focal"
     UNSPECIFIED = "unspecified"
 
-class Pet(db.Model):
+class Pet(db.Model, CRUDMixin):
     __tablename__ = "pet"
 
     id: Mapped[int] = mapped_column(primary_key=True)
