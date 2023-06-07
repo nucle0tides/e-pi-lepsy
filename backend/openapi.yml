@@ -22,8 +22,7 @@ components:
         format: date-time
       minItems: 2
       maxItems: 2
-    # TODO: mark properties like id as `readOnly` instead of manually annotating `required` at endpoints like `POST /pet` below
-    # TODO: this includes createdAt, updatedAt, publicId
+    # TODO: should probably remove non-API/non-public fields from our API spec, i.e. `id` and maybe also(?) `createdAt`, `updatedAt`. `id` for a fact should never be read by API consumers.
     Pet:
       type: object
       additionalProperties: false
@@ -43,7 +42,8 @@ components:
           readOnly: True
         # TODO: just realized, do we want this to be the publicId or the actual Id
         householdId:
-          type: integer
+          type: string
+          format: uuid
         firstName:
           type: string
         lastName:
@@ -100,7 +100,8 @@ components:
           $ref: "#/components/schemas/DateTimeTz"
           readOnly: True
         petId:
-          type: integer
+          type: string
+          format: uuid
         date:
           type: string
         seizureDuration:
@@ -146,7 +147,7 @@ components:
       properties:
         id:
           type: integer
-          readOnly: true
+          readOnly: false
         publicId:
           type: string
           format: uuid
@@ -158,7 +159,8 @@ components:
           $ref: "#/components/schemas/DateTimeTz"
           readOnly: True
         petId:
-          type: integer
+          type: string
+          format: uuid
         name:
           type: string
         alsoKnownAs:
@@ -203,7 +205,8 @@ components:
           $ref: "#/components/schemas/DateTimeTz"
           readOnly: True
         petId:
-          type: integer
+          type: string
+          format: uuid
         name:
           type: string
         address:
