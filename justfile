@@ -1,6 +1,9 @@
-# env variable for Flask application entry point. TODO(?): use just's dot-env integration instead.
-export FLASK_APP := "run.py"
+# env variable for Flask application entry point. TODO: use just's dot-env integration.
+export FLASK_APP  := "run.py"
+# env variable for development db. TODO: dot-env integration.
+export PGPASSWORD := "password"
 
+# List all defined recipes
 default:
   just --list
 
@@ -17,7 +20,7 @@ dev-install:
   @echo "Installing client..."
   cd frontend && npm install
   @echo "Installing backend..."
-  # WARNING: IME when using vscode, you will have to change the setting "Default Interpreter Path" for the workspace to `${workspaceFolder}/backend/.venv/bin/python` in order for vscode to see and use the proper virtualenv.
+  # NOTE: IME when using vscode, you will have to change the setting "Default Interpreter Path" for the workspace to `${workspaceFolder}/backend/.venv/bin/python` in order for vscode to see and use the proper virtualenv.
   cd backend && poetry config virtualenvs.in-project true && poetry install
   @echo "Setting up Dockerized PostgreSQL and running DB migrations..."
   chmod +x scripts/init_db.sh && ./scripts/init_db.sh
@@ -43,3 +46,7 @@ db-upgrade:
 # revert DB to previous migration.
 db-downgrade:
   cd backend && poetry run flask db downgrade
+
+# Open db with psql. TODO: Env management, etc
+db-shell:
+  psql -h localhost -p 5433 -U dev -d epilepsy
