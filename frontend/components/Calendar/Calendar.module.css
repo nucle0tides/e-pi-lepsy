@@ -1,0 +1,38 @@
+/* NOTE: I have given up on trying to nicely integrate tailwindcss via @apply rules and etc. I just can't get css modules in non-app directory stylings to work. */
+/* TODO: Figure out how to make the stylings for the calendar dynamic for eg Mobile view */
+
+
+/* NOTE: I copy-paste the global stylings for rdp here so that i can set margin to 0 while leaving everything else untouched lol */
+/*       see original stylings: @node_modules/react-day-picker/dist/style.css */
+.root {
+  --rdp-cell-size: 40px;
+  --rdp-caption-font-size: 18px;
+  --rdp-accent-color: #0000ff;
+  --rdp-background-color: #e7edff;
+  --rdp-accent-color-dark: #3003e1;
+  --rdp-background-color-dark: #180270;
+  --rdp-outline: 2px solid var(--rdp-accent-color);
+  --rdp-outline-selected: 3px solid var(--rdp-accent-color);
+  margin: 0em;
+}
+
+/* Similar to .root, I copy & pasted the original stylings for .rdp-table and .rdp-month and changed/added width. */
+.my_table {
+  margin: 0;
+  border-collapse: collapse;
+  /* original max-width */
+  /* max-width: calc(var(--rdp-cell-size) * 7); */
+  max-width: none;
+  /* added */
+  width: 100%;
+}
+
+.my_month {
+  margin: 0 1em;
+  /* added */
+  width: 100%;
+}
+
+.my_selected {
+  background-color: #ddd6fe;
+}
