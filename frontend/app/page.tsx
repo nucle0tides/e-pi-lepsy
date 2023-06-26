@@ -8,7 +8,7 @@ export default async function Index() {
         <div className="min-h-screen basis-full bg-neutral-200">
           <div className="flex content-center justify-center">
             <Link className="m-20 text-2xl" href="/dashboard">
-              Dashboard
+              Go to Dashboard
             </Link>
           </div>
         </div>

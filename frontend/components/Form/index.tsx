@@ -22,20 +22,35 @@ export function AddPetForm() {
 
   return (
     /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6">
       {/* register your input into the hook by invoking the "register" function */}
       {/* include validation with required or other standard HTML validation rules */}
-      <input {...register("firstName", { required: true })} />
-      <input {...register("lastName", { required: true })} />
-      <input {...register("householdId", { required: true })} />
-      <input {...register("dateOfBirth", { required: true })} />
+      <label>
+        <span className="">first name</span>
+        <input type="text" {...register("firstName", { required: true })} />
+      </label>
+      { errors.firstName && <span className="text-red-500">This field is required</span> }
+      <label className="block">
+        <span>last name</span>
+        <input type="text" {...register("lastName", { required: true })} />
+      </label>
+      { errors.lastName && <span className="text-red-500">This field is required</span> }
+      <label className="block">
+        <span>household ID</span>
+        <input type="text" {...register("householdId", { required: true })} />
+      </label>
+      { errors.householdId && <span className="text-red-500">This field is required</span> }
+      <label className="block">
+        <span>date of birth (YY-mm-dd)</span>
+        <input type="text" {...register("dateOfBirth", { required: true })} />
+      </label>
+      { errors.dateOfBirth && <span className="text-red-500">This field is required</span> }
       {/* errors will return when field validation fails  */}
       {/* TODO: hilariously bad error checking */}
-      {errors.firstName &&
-        errors.lastName &&
-        errors.householdId &&
-        errors.dateOfBirth && <span>This field is required</span>}
-      <input type="submit" />
+      <label className="block">
+        <span className="px-4 py-1 text-sm text-purple-600 font-semibold rounded-full border border-purple-200 hover:text-white hover:bg-purple-600 hover:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2">submit</span>
+        <button type="submit"></button>
+      </label>
     </form>
   );
 }

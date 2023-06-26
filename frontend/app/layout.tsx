@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       {/* TODO: learn how NextJS's stupid ass font logic works */}
       <body className={inter.className}>
-        <main className="flex min-h-screen w-full flex-col overflow-hidden bg-indigo-900">
+        <main className="flex min-h-screen w-full flex-col overflow-hidden">
           {children}
         </main>
       </body>
