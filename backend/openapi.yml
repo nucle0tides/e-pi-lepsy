@@ -7,6 +7,11 @@ info:
 servers:
   - url: "/api"
 
+# TODO: setup api key/auth
+#       - https://connexion.readthedocs.io/en/latest/security.html#basic-authentication
+#       - https://github.com/spec-first/connexion/tree/main/examples/apikey
+#       - https://swagger.io/docs/specification/authentication/api-keys/
+#       - https://github.com/spec-first/connexion/issues/791
 components:
   schemas:
     Date:
@@ -22,24 +27,20 @@ components:
         format: date-time
       minItems: 2
       maxItems: 2
-    # TODO: should probably remove non-API/non-public fields from our API spec, i.e. `id` and maybe also(?) `createdAt`, `updatedAt`. `id` for a fact should never be read by API consumers.
     Pet:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: integer
-          readOnly: true
         publicId:
           type: string
           format: uuid
-          readOnly: True
+          readOnly: true
         createdAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         # TODO: just realized, do we want this to be the publicId or the actual Id
         householdId:
           type: string
@@ -56,19 +57,16 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: integer
-          readOnly: true
         publicId:
           type: string
           format: uuid
-          readOnly: True
+          readOnly: true
         createdAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         primaryOwnerName:
           type: string
         primaryOwnerEmail:
@@ -87,18 +85,15 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: integer
-          readOnly: True
         publicId:
           type: string
-          readOnly: True
+          readOnly: true
         createdAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         petId:
           type: string
           format: uuid
@@ -145,19 +140,16 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: integer
-          readOnly: false
         publicId:
           type: string
           format: uuid
           readOnly: true
         createdAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         petId:
           type: string
           format: uuid
@@ -191,19 +183,16 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id:
-         type: integer
-         readOnly: true
         publicId:
           type: string
           format: uuid
-          readOnly: True
+          readOnly: true
         createdAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
-          readOnly: True
+          readOnly: true
         petId:
           type: string
           format: uuid
@@ -233,7 +222,7 @@ paths:
       summary: "Create a household."
       requestBody:
         description: "Household to create"
-        required: True
+        required: true
         content:
           application/json:
             schema:
@@ -285,11 +274,11 @@ paths:
           required: true
       requestBody:
         description: "Household properties being updated."
-        required: True
+        x-body-name: "household"
+        required: true
         content:
           application/json:
             schema:
-              x-body-name: "household"
               $ref: "#/components/schemas/Household"
 
       responses:
@@ -312,11 +301,11 @@ paths:
       summary: "Create a Pet."
       requestBody:
         description: "Pet to create"
-        required: True
+        x-body-name: "pet"
+        required: true
         content:
           application/json:
             schema:
-              x-body-name: "pet"
               $ref: "#/components/schemas/Pet"
               required: ["firstName", "lastName", "dateOfBirth", "householdId"]
       responses:
@@ -374,11 +363,11 @@ paths:
           required: true
       requestBody:
         description: "Pet properties being updated."
-        required: True
+        x-body-name: "pet"
+        required: true
         content:
           application/json:
             schema:
-              x-body-name: "pet"
               $ref: "#/components/schemas/Pet"
       responses:
         "200":
