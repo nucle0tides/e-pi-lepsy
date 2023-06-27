@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 from sqlalchemy.exc import NoResultFound
 
+# TODO: remove all route logic for id columns because nobody should be trying to use/have access to internal ID values
 class CRUDMixin(object):
     @classmethod
     def create(cls, schema, session, data):

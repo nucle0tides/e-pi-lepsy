@@ -372,3 +372,108 @@ paths:
       responses:
         "200":
           description: "Successfully updated pet with ID."
+
+  /pet/{p_id}/seizure:
+    post:
+      operationId: "api.pet.seizure.create"
+      tags:
+        - SeizureActivity
+      summary: "Create a seizure activity."
+      requestBody:
+        description: "Seizure activity to create."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeizureActivity"
+              # TODO: update
+              required: ["primaryOwnerName", "primaryOwnerEmail"]
+      responses:
+        "201":
+          description: "Successfully created a seizure activity for pet with ID."
+  /pet/{p_id}/siezure/{s_id}:
+    get:
+      operationId: "api.pet.seizure.get"
+      tags:
+        - SeizureActivity
+      parameters:
+        - name: p_id
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - name: s_id
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        "200":
+          description: "Successfully queried seizure activity for pet by ID."
+    delete:
+      operationId: "api.pet.seizure.delete"
+      tags:
+        - SeizureActivity
+      parameters:
+        - name: p_id
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - name: s_id
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        "204":
+          description: "Successfully deleted siezure activity for pet with ID."
+    put:
+      operationId: "api.pet.seizure.update"
+      tags:
+        - SeizureActivity
+      summary: "Update a seizure activity by ID."
+      parameters:
+        - name: p_id
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - name: s_id
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        description: "Seizure activity properties being updated."
+        x-body-name: "seizure"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeizureActivity"
+      responses:
+        "200":
+          description: "Successfully updated seizure activity for pet with ID."
+  /pet/{p_id}/seizure/list:
+    get:
+      operationId: "api.pet.seizure.read_all"
+      tags:
+        - SeizureActivity
+      summary: "List all seizure activity logs."
+      parameters:
+        - name: p_id
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        "200":
+          description: "Successfully retrieve seizure activity list for pet by ID."
