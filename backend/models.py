@@ -1,14 +1,15 @@
 # NOTE: for any future entity with an updated_at column, need to modify the corresponding alembic migration to execute the trigger for each instance as done in migration:
 #       api/migrations/versions/c00f3ae959a6_fixed_updated_at_in_models.py
-import enum
 from app import db, ma
 from datetime import datetime, date
+import enum
 import logging
+from marshmallow import fields
 from sqlalchemy import ForeignKey, func, text, Date, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List, Optional
 from sqlalchemy.exc import NoResultFound
+from typing import List, Optional
 
 # TODO: remove all route logic for id columns because nobody should be trying to use/have access to internal ID values
 class CRUDMixin(object):
@@ -60,9 +61,9 @@ class CRUDMixin(object):
 
 
 class SeizureType(enum.Enum):
-    TONICCLONIC = "tonic-clonic"
-    FOCAL = "focal"
-    UNSPECIFIED = "unspecified"
+    TONICCLONIC = "TonicClonic"
+    FOCAL = "Focal"
+    UNSPECIFIED = "Unspecified"
 
 class Pet(db.Model, CRUDMixin):
     __tablename__ = "pet"
@@ -164,6 +165,9 @@ class SeizureActivitySchema(ma.SQLAlchemyAutoSchema, CamelCaseSchema):
         sqla_session = db.session
         include_fk = True
         exclude = ("id", "created_at", "updated_at")
+    # since SeizureType is a plain python dataclass enum, we have to be explicit with marshmallow lol
+    seizure_type = fields.Enum(SeizureType)
+
 
 seizure_activity_schema = SeizureActivitySchema()
 seizure_activities_schema = SeizureActivitySchema(many=True)
