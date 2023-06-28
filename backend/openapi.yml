@@ -41,7 +41,6 @@ components:
         updatedAt:
           $ref: "#/components/schemas/DateTimeTz"
           readOnly: true
-        # TODO: just realized, do we want this to be the publicId or the actual Id
         householdId:
           type: string
           format: uuid
@@ -78,9 +77,9 @@ components:
     SeizureType:
       type: string
       enum:
-        - TonicClonic
-        - Focal
-        - Unspecified
+        - TONICCLONIC
+        - FOCAL
+        - UNSPECIFIED
     SeizureActivity:
       type: object
       additionalProperties: false
@@ -98,13 +97,15 @@ components:
           type: string
           format: uuid
         date:
-          type: string
+          $ref: "#/components/schemas/Date"
         seizureDuration:
           $ref: "#/components/schemas/Duration"
         seizureType:
           $ref: "#/components/schemas/SeizureType"
-        episodeDuration:
-          $ref: "#/components/schemas/Duration"
+        episodeStart:
+          $ref: "#/components/schemas/DateTimeTz"
+        episodeEnd:
+          $ref: "#/components/schemas/DateTimeTz"
         isClusterEvent:
           type: boolean
         location:
@@ -112,18 +113,12 @@ components:
         notes:
           type: string
         medicationAdministered:
-          type: object
-          additionalProperties: false
-          properties:
-            name:
-              type: string
-            dosage:
-              type: string
+          type: string
+        medicationDosage:
+          type: string
+      # TODO: given that seizure resources cannot be accessed without petID in the URI to begin with, do we really need/want to have PetID in the request body for all requests?
       required:
         - petId
-        - date
-        - seizureType
-        - episodeDuration
     DosageUnit:
       type: string
       enum:
@@ -382,16 +377,17 @@ paths:
       requestBody:
         description: "Seizure activity to create."
         required: true
+        x-body-name: "activity"
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/SeizureActivity"
               # TODO: update
-              required: ["primaryOwnerName", "primaryOwnerEmail"]
+              required: ["date", "seizureType", "episodeDuration", "petId"]
       responses:
         "201":
           description: "Successfully created a seizure activity for pet with ID."
-  /pet/{p_id}/siezure/{s_id}:
+  /pet/{p_id}/seizure/{s_id}:
     get:
       operationId: "api.pet.seizure.get"
       tags:
@@ -452,12 +448,13 @@ paths:
           required: true
       requestBody:
         description: "Seizure activity properties being updated."
-        x-body-name: "seizure"
+        x-body-name: "activity"
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/SeizureActivity"
+              required: ["petId"]
       responses:
         "200":
           description: "Successfully updated seizure activity for pet with ID."
