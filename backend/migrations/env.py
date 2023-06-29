@@ -36,6 +36,9 @@ def get_engine_url():
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+# NOTE: not sure if this actually gets applied from app.py so I do it again here. Yeah, this is incredibly sloppy. I'm sorry I am unwilling to dig deeper into the blackhole of bad OOP that is the python ecosystem.
+from app import db
+target_metadata = db.metadata
 config.set_main_option('sqlalchemy.url', get_engine_url())
 target_db = current_app.extensions['migrate'].db
 

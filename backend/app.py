@@ -5,9 +5,23 @@ from flask import jsonify, make_response
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
+
+# NOTE: define naming conventions because otherwise migrations become completely dysfunctional by default lol :)
+# [1]: https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/#using-custom-metadata-and-naming-conventions
+# [2]: https://github.com/miguelgrinberg/Flask-Migrate/issues/155
+# [3]: 
+convention = {
+  "ix": "ix_%(column_0_label)s",
+  "uq": "uq_%(table_name)s_%(column_0_name)s",
+  "ck": "ck_%(table_name)s_%(constraint_name)s",
+  "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+  "pk": "pk_%(table_name)s"
+}
+metadata = MetaData(naming_convention=convention)
 
 # NOTE: Always initialize sqlalchemy first and then marshmallow
-db = SQLAlchemy()
+db = SQLAlchemy(metadata=metadata)
 ma = Marshmallow()
 migrate = Migrate()
 
@@ -44,11 +58,13 @@ def init_app():
         import api
 
         # TODO: get rid of this or move it somewhere else
-        @app.route("/hi")
+        @app.route("/api/hi")
         def hi():
             return make_response(jsonify({ "message": "hi from flask" }), 200)
 
         # import models here for auto-gen migrations
         from models import Household, Pet, SeizureActivity
+        # necessary for migrations and naming conventions
+        target_metadata = db.metadata
 
         return app
