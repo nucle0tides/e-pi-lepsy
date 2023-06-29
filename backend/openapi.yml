@@ -98,8 +98,10 @@ components:
           format: uuid
         date:
           $ref: "#/components/schemas/Date"
-        seizureDuration:
-          $ref: "#/components/schemas/Duration"
+        seizureStart:
+          $ref: "#/components/schemas/DateTimeTz"
+        seizureEnd:
+          $ref: "#/components/schemas/DateTimeTz"
         seizureType:
           $ref: "#/components/schemas/SeizureType"
         episodeStart:

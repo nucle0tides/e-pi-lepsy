@@ -1,4 +1,4 @@
-import { AddPetForm } from "@/components/Form";
+import { AddPetForm, SeizureLogForm } from "@/components/Form";
 import Calendar from "@/components/Calendar";
 import { QuickSchedule } from "@/components/Buttons";
 
@@ -38,6 +38,10 @@ export default async function Dashboard() {
               <h2 className="text-lg font-bold mt-2 mb-2">New family member? Add them them to your household</h2>
               <div className="bg-neutral-50 rounded w-8/12 p-1">
                 <AddPetForm />
+              </div>
+              <h2 className="text-lg font-bold mt-2 mb-2">New seizure activity? log it</h2>
+              <div className="bg-neutral-50 rounded w-8/12 p-1">
+                <SeizureLogForm/>
               </div>
             </div>
             <div className="flex flex-col w-2/5">
